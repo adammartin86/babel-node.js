@@ -1,7 +1,7 @@
 import cors from 'cors';
 import express from 'express';
 import { ApolloServer, gql } from 'apollo-server-express';
-import {v4 as uuidv4} from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 // import 'dotenv/config';
 
 const app = express();
@@ -20,6 +20,8 @@ const schema = gql`
 
     type Mutation {
         createMessage(text: String!): Message!
+        deleteMessage(id: ID!): Boolean!
+        updateMessage(id: ID!): Boolean!
     }
 
     type User {
@@ -82,16 +84,40 @@ const resolvers = {
     },
 
     Mutation: {
-        createMessage: (parent, {text}, {me}) => {
+        createMessage: (parent, { text }, { me }) => {
             const id = uuidv4();
             const message = {
                 id,
-                text, 
+                text,
                 userId: me.id,
             };
 
+            messages[id] = message;
+            users[me.id].messageIds.push(id);
+
             return message;
         },
+        deleteMessage: (parent, { id }) => {
+            const { [id]: message, ...otherMessages } = messages;
+
+            if (!message) {
+                return false;
+            }
+
+            messages = otherMessages;
+
+            return true;
+        },
+        // updateMessage: (parent, { id }) => {
+        //     const { [id]: message, ...otherMessages } = messages;
+        //     const message = {
+        //         id,
+        //         text,
+        //         userId: me.id,
+        //     };
+
+
+        // }
     },
 
     User: {
@@ -122,8 +148,8 @@ const server = new ApolloServer({
 
 server.applyMiddleware({ app, path: '/graphql' });
 
-app.listen({ port: 8000 }, () => {
-    console.log('Apollo Server on http://localhost:8000/graphql');
+app.listen({ port: 8001 }, () => {
+    console.log('Apollo Server on http://localhost:8001/graphql');
 })
 
 
