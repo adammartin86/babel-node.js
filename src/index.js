@@ -21,7 +21,7 @@ const schema = gql`
     type Mutation {
         createMessage(text: String!): Message!
         deleteMessage(id: ID!): Boolean!
-        updateMessage(id: ID!): Boolean!
+        updateMessage(text: String!): Message!
     }
 
     type User {
